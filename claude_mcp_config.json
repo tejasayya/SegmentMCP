@@ -1,0 +1,13 @@
+{
+  "mcpServers": {
+    "segmentation-agent": {
+      "command": "python",
+      "args": ["C:\\Users\\Teja\\Documents\\SegmentMCP\\main.py"],
+      "env": {
+        "OPENAI_API_KEY": "your-openai-api-key-here",
+        "KAGGLE_USERNAME": "your-kaggle-username",
+        "KAGGLE_KEY": "your-kaggle-key"
+      }
+    }
+  }
+}
