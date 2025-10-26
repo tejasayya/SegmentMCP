@@ -1,15 +1,21 @@
 from models.schemas import ActivationResult
 from database.kaggle_connector import KaggleConnector
 import uuid
+import time
+from datetime import datetime
 from typing import List
 
 class ActivationAgent:
     def __init__(self, db_connector: KaggleConnector):
         self.db_connector = db_connector
         self.active_segments = {}
+        # Import here to avoid circular imports
+        from config import Config
+        self.config = Config.get_agent_config("activation")
     
     async def activate_segment(self, query: str, segment_name: str = None) -> ActivationResult:
         """Execute the final query and activate the segment"""
+        start_time = time.time()
         
         try:
             # Execute the query
@@ -24,26 +30,36 @@ class ActivationAgent:
                 "query": query,
                 "results": results,
                 "customer_count": customer_count,
-                "name": segment_name or f"Segment_{segment_id}"
+                "name": segment_name or f"Segment_{segment_id}",
+                "created_at": datetime.utcnow().isoformat()
             }
             
             # Simulate downstream system activation
             downstream_systems = await self._activate_downstream_systems(segment_id, results)
             
+            processing_time = int((time.time() - start_time) * 1000)
+            
             return ActivationResult(
                 success=True,
                 segment_id=segment_id,
                 customer_count=customer_count,
-                downstream_systems=downstream_systems
+                downstream_systems=downstream_systems,
+                query_used=query,
+                processing_time_ms=processing_time,
+                issues=[]  # No issues on success
             )
             
         except Exception as e:
+            processing_time = int((time.time() - start_time) * 1000)
+            
             return ActivationResult(
                 success=False,
                 segment_id=None,
                 customer_count=0,
                 downstream_systems=[],
-                issues=[str(e)]
+                query_used=query,
+                processing_time_ms=processing_time,
+                issues=[f"Activation failed: {str(e)}"]  # Now properly defined in schema
             )
     
     async def _activate_downstream_systems(self, segment_id: str, results: List[dict]) -> List[str]:

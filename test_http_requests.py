@@ -5,7 +5,7 @@ Test the HTTP wrapper with sample requests
 import requests
 import json
 
-BASE_URL = "http://localhost:8000"
+BASE_URL = "http://localhost:8001"
 
 def test_create_segment():
     """Test creating a customer segment"""

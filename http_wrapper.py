@@ -118,7 +118,19 @@ async def shutdown():
     """Clean up MCP process on shutdown"""
     global mcp_process
     if mcp_process:
-        mcp_process.terminate()
+        try:
+            mcp_process.terminate()
+            # Wait for process to terminate with timeout
+            mcp_process.wait(timeout=5)
+            print("✅ MCP process terminated cleanly")
+        except subprocess.TimeoutExpired:
+            print("⚠️  MCP process didn't terminate, forcing kill")
+            mcp_process.kill()
+            mcp_process.wait()
+        except Exception as e:
+            print(f"⚠️  Error during process cleanup: {e}")
+        finally:
+            mcp_process = None
 
 if __name__ == "__main__":
     print("Starting HTTP wrapper for MCP server...")
@@ -126,7 +138,7 @@ if __name__ == "__main__":
     print("  POST /create-segment - Create customer segment")
     print("  GET /tools - List available tools")
     print("  GET /schema - Get database schema")
-    print("\nServer will run on http://localhost:8000")
-    print("API docs available at http://localhost:8000/docs")
+    print("\nServer will run on http://localhost:8001")
+    print("API docs available at http://localhost:8001/docs")
     
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    uvicorn.run(app, host="0.0.0.0", port=8001)

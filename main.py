@@ -30,26 +30,22 @@ class SegmentationMCPServer:
             self.config.KAGGLE_DATASET
         ).initialize()
         
-        # Initialize agents
-        try:
-            self.agents["intent_parser"] = IntentParserAgent(self.config.OPENAI_API_KEY)
-        except Exception as e:
-            print(f"Warning: Could not initialize IntentParserAgent: {e}")
-            self.agents["intent_parser"] = None
-            
-        self.agents["data_mapper"] = DataMapperAgent(self.db_connector)
-        
-        try:
-            self.agents["query_generator"] = QueryGeneratorAgent(
-                self.config.OPENAI_API_KEY, 
-                self.db_connector
-            )
-        except Exception as e:
-            print(f"Warning: Could not initialize QueryGeneratorAgent: {e}")
-            self.agents["query_generator"] = None
-            
-        self.agents["validation"] = ValidationAgent(self.db_connector)
-        self.agents["activation"] = ActivationAgent(self.db_connector)
+        # Initialize agents with consistent error handling
+        agents_to_initialize = [
+            ("data_mapper", DataMapperAgent, [self.db_connector]),
+            ("validation", ValidationAgent, [self.db_connector]),
+            ("activation", ActivationAgent, [self.db_connector]),
+            ("intent_parser", IntentParserAgent, [self.config.OPENAI_API_KEY, self.config.INTENT_PARSER_MODEL]),
+            ("query_generator", QueryGeneratorAgent, [self.config.OPENAI_API_KEY, self.db_connector, self.config.QUERY_GENERATOR_MODEL])
+        ]
+
+        for agent_name, agent_class, args in agents_to_initialize:
+            try:
+                self.agents[agent_name] = agent_class(*args)
+                print(f"✅ {agent_name} initialized")
+            except Exception as e:
+                print(f"⚠️  {agent_name} unavailable: {e}")
+                self.agents[agent_name] = None
         
         print("Segmentation MCP Server initialized successfully!")
     
@@ -108,10 +104,14 @@ class SegmentationMCPServer:
             )
             print(f"Validation: {validation_result.is_valid}, Issues: {validation_result.issues}")
             
-            if not validation_result.is_valid:
+            # Check for critical validation issues (exclude large row count warnings)
+            critical_issues = [issue for issue in validation_result.issues 
+                             if not issue.startswith("Query returns large number of rows")]
+            
+            if critical_issues:
                 return json.dumps({
                     "status": "validation_failed",
-                    "issues": validation_result.issues,
+                    "issues": critical_issues,
                     "sample_data": validation_result.sample_data
                 })
             
@@ -136,11 +136,12 @@ class SegmentationMCPServer:
                     "intent_parsing": intent_result.dict(),
                     "data_mapping": mapping_result.dict(),
                     "query_generation": query_result.dict(),
-                    "validation": validation_result.dict()
+                    "validation": validation_result.dict(),
+                    "activation": activation_result.dict()
                 }
             }
             
-            return json.dumps(result, indent=2)
+            return result
             
         except Exception as e:
             error_result = {
@@ -148,26 +149,26 @@ class SegmentationMCPServer:
                 "error": str(e),
                 "query": natural_language_query
             }
-            return json.dumps(error_result, indent=2)
+            return error_result
     
     async def get_segment_info(self, segment_id: str) -> str:
         """Get information about a created segment"""
         activation_agent = self.agents["activation"]
         if segment_id in activation_agent.active_segments:
             segment = activation_agent.active_segments[segment_id]
-            return json.dumps({
+            return {
                 "segment_id": segment_id,
                 "name": segment["name"],
                 "customer_count": segment["customer_count"],
                 "query": segment["query"]
-            }, indent=2)
+            }
         else:
-            return json.dumps({"error": "Segment not found"}, indent=2)
+            return {"error": "Segment not found"}
     
     async def get_database_schema(self) -> str:
         """Get the current database schema information"""
         schema = self.db_connector.get_schema()
-        return json.dumps(schema, indent=2)
+        return schema
 
 # Global server instance
 segmentation_server = None
@@ -183,7 +184,9 @@ async def create_segment(natural_language_query: str) -> str:
     Returns:
         JSON string with segment creation results
     """
-    return await segmentation_server.create_segment(natural_language_query)
+    result = await segmentation_server.create_segment(natural_language_query)
+    # MCP tools expect string returns, so serialize the dict to JSON
+    return json.dumps(result, indent=2)
 
 @server.tool()
 async def get_segment_info(segment_id: str) -> str:
