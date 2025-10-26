@@ -5,9 +5,14 @@ import re
 from typing import List, Dict, Any
 
 class IntentParserAgent:
-    def __init__(self, openai_api_key: str):
+    def __init__(self, openai_api_key: str, model: str = None):
+        if not openai_api_key:
+            raise ValueError("OpenAI API key is required")
         self.client = OpenAI(api_key=openai_api_key)
-        self.model = "gpt-3.5-turbo"  # Use a model that's available with most API keys
+        # Import here to avoid circular imports
+        from config import Config
+        self.config = Config.get_agent_config("intent_parser")
+        self.model = model or self.config["model"]
     
     async def parse_intent(self, natural_language_query: str) -> IntentResult:
         """Parse natural language into structured segment criteria"""
@@ -50,10 +55,15 @@ class IntentParserAgent:
         """
         
         try:
+            import time
+            start_time = time.time()
+            
             response = self.client.chat.completions.create(
                 model=self.model,
                 messages=[{"role": "user", "content": prompt}],
-                temperature=0.1
+                temperature=self.config["temperature"],
+                max_tokens=self.config["max_tokens"],
+                timeout=self.config["timeout"]
             )
             
             content = response.choices[0].message.content
@@ -65,11 +75,14 @@ class IntentParserAgent:
                 criteria_data = json.loads(content)
             
             criteria = SegmentCriteria(**criteria_data)
+            processing_time = int((time.time() - start_time) * 1000)
             
             return IntentResult(
                 parsed_criteria=criteria,
                 confidence=0.9,
-                ambiguous_terms=self._find_ambiguous_terms(natural_language_query)
+                ambiguous_terms=self._find_ambiguous_terms(natural_language_query),
+                processing_time_ms=processing_time,
+                parsing_notes=["Successfully parsed natural language query"]
             )
             
         except Exception as e:

@@ -8,22 +8,28 @@ import asyncio
 
 class KaggleConnector:
     def __init__(self, dataset_name: str):
+        from config import Config
         self.dataset_name = dataset_name
-        self.csv_path = "data/bank-full.csv"  # Use the actual downloaded filename
-        self.db_path = "data/bank_deposit.db"
+        self.csv_path = str(Config.get_csv_path())  # Use centralized path detection
+        self.db_path = str(Config.DATABASE_SQLITE_PATH)  # Use centralized SQLite path
         self.engine = None
         self.df = None
         
     async def initialize(self):
         """Download and setup the Kaggle dataset"""
+        from config import Config
+        
         if not os.path.exists(self.csv_path):
-            os.makedirs("data", exist_ok=True)
+            # Ensure data directory exists using Config
+            Config.DATA_DIR.mkdir(exist_ok=True)
             print(f"Downloading dataset {self.dataset_name}...")
             kaggle.api.dataset_download_files(
                 self.dataset_name, 
-                path="data", 
+                path=str(Config.DATA_DIR), 
                 unzip=True
             )
+            # Update csv_path after download in case filename differs
+            self.csv_path = str(Config.get_csv_path())
         
         # Load data with semicolon delimiter
         self.df = pd.read_csv(self.csv_path, delimiter=';')

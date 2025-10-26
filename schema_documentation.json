@@ -1,0 +1,462 @@
+{
+  "SegmentCriteria": {
+    "properties": {
+      "conditions": {
+        "description": "List of segment conditions",
+        "items": {
+          "additionalProperties": true,
+          "type": "object"
+        },
+        "minItems": 1,
+        "title": "Conditions",
+        "type": "array"
+      },
+      "logical_operators": {
+        "default": [
+          "AND"
+        ],
+        "description": "Operators connecting conditions",
+        "items": {
+          "type": "string"
+        },
+        "title": "Logical Operators",
+        "type": "array"
+      }
+    },
+    "required": [
+      "conditions"
+    ],
+    "title": "SegmentCriteria",
+    "type": "object"
+  },
+  "IntentResult": {
+    "$defs": {
+      "SegmentCriteria": {
+        "properties": {
+          "conditions": {
+            "description": "List of segment conditions",
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "minItems": 1,
+            "title": "Conditions",
+            "type": "array"
+          },
+          "logical_operators": {
+            "default": [
+              "AND"
+            ],
+            "description": "Operators connecting conditions",
+            "items": {
+              "type": "string"
+            },
+            "title": "Logical Operators",
+            "type": "array"
+          }
+        },
+        "required": [
+          "conditions"
+        ],
+        "title": "SegmentCriteria",
+        "type": "object"
+      }
+    },
+    "properties": {
+      "timestamp": {
+        "title": "Timestamp",
+        "type": "string"
+      },
+      "processing_time_ms": {
+        "anyOf": [
+          {
+            "minimum": 0,
+            "type": "integer"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "description": "Processing time in milliseconds",
+        "title": "Processing Time Ms"
+      },
+      "parsed_criteria": {
+        "$ref": "#/$defs/SegmentCriteria"
+      },
+      "confidence": {
+        "description": "Confidence score for parsing",
+        "maximum": 1.0,
+        "minimum": 0.0,
+        "title": "Confidence",
+        "type": "number"
+      },
+      "ambiguous_terms": {
+        "description": "Terms that were ambiguous",
+        "items": {
+          "type": "string"
+        },
+        "title": "Ambiguous Terms",
+        "type": "array"
+      },
+      "parsing_notes": {
+        "description": "Additional parsing information",
+        "items": {
+          "type": "string"
+        },
+        "title": "Parsing Notes",
+        "type": "array"
+      }
+    },
+    "required": [
+      "parsed_criteria",
+      "confidence"
+    ],
+    "title": "IntentResult",
+    "type": "object"
+  },
+  "DataMapping": {
+    "properties": {
+      "timestamp": {
+        "title": "Timestamp",
+        "type": "string"
+      },
+      "processing_time_ms": {
+        "anyOf": [
+          {
+            "minimum": 0,
+            "type": "integer"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "description": "Processing time in milliseconds",
+        "title": "Processing Time Ms"
+      },
+      "business_terms": {
+        "additionalProperties": {
+          "type": "string"
+        },
+        "description": "business_term -> schema_field",
+        "title": "Business Terms",
+        "type": "object"
+      },
+      "table_mappings": {
+        "additionalProperties": {
+          "type": "string"
+        },
+        "description": "logical_table -> physical_table",
+        "title": "Table Mappings",
+        "type": "object"
+      },
+      "field_mappings": {
+        "additionalProperties": {
+          "type": "string"
+        },
+        "description": "business_field -> db_field",
+        "title": "Field Mappings",
+        "type": "object"
+      }
+    },
+    "title": "DataMapping",
+    "type": "object"
+  },
+  "QueryResult": {
+    "properties": {
+      "timestamp": {
+        "title": "Timestamp",
+        "type": "string"
+      },
+      "processing_time_ms": {
+        "anyOf": [
+          {
+            "minimum": 0,
+            "type": "integer"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "description": "Processing time in milliseconds",
+        "title": "Processing Time Ms"
+      },
+      "sql_query": {
+        "description": "Generated SQL query",
+        "minLength": 1,
+        "title": "Sql Query",
+        "type": "string"
+      },
+      "optimized": {
+        "default": false,
+        "description": "Whether query was optimized",
+        "title": "Optimized",
+        "type": "boolean"
+      },
+      "estimated_rows": {
+        "description": "Estimated number of rows",
+        "minimum": 0,
+        "title": "Estimated Rows",
+        "type": "integer"
+      },
+      "tables_used": {
+        "description": "Database tables used",
+        "items": {
+          "type": "string"
+        },
+        "title": "Tables Used",
+        "type": "array"
+      },
+      "optimization_notes": {
+        "description": "Query optimization notes",
+        "items": {
+          "type": "string"
+        },
+        "title": "Optimization Notes",
+        "type": "array"
+      }
+    },
+    "required": [
+      "sql_query",
+      "estimated_rows"
+    ],
+    "title": "QueryResult",
+    "type": "object"
+  },
+  "ValidationResult": {
+    "properties": {
+      "timestamp": {
+        "title": "Timestamp",
+        "type": "string"
+      },
+      "processing_time_ms": {
+        "anyOf": [
+          {
+            "minimum": 0,
+            "type": "integer"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "description": "Processing time in milliseconds",
+        "title": "Processing Time Ms"
+      },
+      "is_valid": {
+        "description": "Whether validation passed",
+        "title": "Is Valid",
+        "type": "boolean"
+      },
+      "issues": {
+        "description": "Validation errors",
+        "items": {
+          "type": "string"
+        },
+        "title": "Issues",
+        "type": "array"
+      },
+      "warnings": {
+        "description": "Validation warnings",
+        "items": {
+          "type": "string"
+        },
+        "title": "Warnings",
+        "type": "array"
+      },
+      "sample_data": {
+        "description": "Sample query results",
+        "items": {
+          "additionalProperties": true,
+          "type": "object"
+        },
+        "title": "Sample Data",
+        "type": "array"
+      },
+      "row_count": {
+        "description": "Total number of rows",
+        "minimum": 0,
+        "title": "Row Count",
+        "type": "integer"
+      }
+    },
+    "required": [
+      "is_valid",
+      "row_count"
+    ],
+    "title": "ValidationResult",
+    "type": "object"
+  },
+  "ActivationResult": {
+    "properties": {
+      "timestamp": {
+        "title": "Timestamp",
+        "type": "string"
+      },
+      "processing_time_ms": {
+        "anyOf": [
+          {
+            "minimum": 0,
+            "type": "integer"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "description": "Processing time in milliseconds",
+        "title": "Processing Time Ms"
+      },
+      "success": {
+        "description": "Whether activation succeeded",
+        "title": "Success",
+        "type": "boolean"
+      },
+      "segment_id": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "description": "Generated segment identifier",
+        "title": "Segment Id"
+      },
+      "customer_count": {
+        "description": "Number of customers in segment",
+        "minimum": 0,
+        "title": "Customer Count",
+        "type": "integer"
+      },
+      "downstream_systems": {
+        "description": "Systems where segment was activated",
+        "items": {
+          "type": "string"
+        },
+        "title": "Downstream Systems",
+        "type": "array"
+      },
+      "issues": {
+        "description": "Activation errors or issues",
+        "items": {
+          "type": "string"
+        },
+        "title": "Issues",
+        "type": "array"
+      },
+      "query_used": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "description": "SQL query used for activation",
+        "title": "Query Used"
+      }
+    },
+    "required": [
+      "success",
+      "customer_count"
+    ],
+    "title": "ActivationResult",
+    "type": "object"
+  },
+  "APIResponse": {
+    "properties": {
+      "status": {
+        "description": "Response status",
+        "pattern": "^(success|error|warning)$",
+        "title": "Status",
+        "type": "string"
+      },
+      "data": {
+        "anyOf": [
+          {
+            "additionalProperties": true,
+            "type": "object"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "description": "Response data",
+        "title": "Data"
+      },
+      "errors": {
+        "description": "Error messages",
+        "items": {
+          "type": "string"
+        },
+        "title": "Errors",
+        "type": "array"
+      },
+      "warnings": {
+        "description": "Warning messages",
+        "items": {
+          "type": "string"
+        },
+        "title": "Warnings",
+        "type": "array"
+      },
+      "metadata": {
+        "additionalProperties": true,
+        "description": "Additional metadata",
+        "title": "Metadata",
+        "type": "object"
+      }
+    },
+    "required": [
+      "status"
+    ],
+    "title": "APIResponse",
+    "type": "object"
+  },
+  "AgentConfig": {
+    "properties": {
+      "model_name": {
+        "description": "AI model name",
+        "title": "Model Name",
+        "type": "string"
+      },
+      "temperature": {
+        "default": 0.1,
+        "description": "Model temperature",
+        "maximum": 2.0,
+        "minimum": 0.0,
+        "title": "Temperature",
+        "type": "number"
+      },
+      "max_tokens": {
+        "default": 1000,
+        "description": "Maximum tokens",
+        "exclusiveMinimum": 0,
+        "maximum": 4000,
+        "title": "Max Tokens",
+        "type": "integer"
+      },
+      "timeout_seconds": {
+        "default": 30,
+        "description": "Request timeout",
+        "exclusiveMinimum": 0,
+        "maximum": 300,
+        "title": "Timeout Seconds",
+        "type": "integer"
+      }
+    },
+    "required": [
+      "model_name"
+    ],
+    "title": "AgentConfig",
+    "type": "object"
+  }
+}

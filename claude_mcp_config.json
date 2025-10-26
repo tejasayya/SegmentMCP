@@ -2,7 +2,8 @@
   "mcpServers": {
     "segmentation-agent": {
       "command": "python",
-      "args": ["C:\\Users\\Teja\\Documents\\SegmentMCP\\main.py"],
+      "args": ["main.py"],
+      "cwd": "/absolute/path/to/your/SegmentMCP",
       "env": {
         "OPENAI_API_KEY": "your-openai-api-key-here",
         "KAGGLE_USERNAME": "your-kaggle-username",
@@ -11,3 +12,8 @@
     }
   }
 }
+
+// Instructions:
+// 1. Replace "/absolute/path/to/your/SegmentMCP" with your actual project path
+// 2. Or run: python -c "from config import Config; Config.setup_project_structure()"
+// 3. This will generate "claude_mcp_config_generated.json" with correct paths

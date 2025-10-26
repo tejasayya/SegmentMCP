@@ -21,6 +21,9 @@ class DataMapperAgent:
     
     async def map_criteria_to_schema(self, criteria: SegmentCriteria) -> DataMapping:
         """Map business terms to actual database schema"""
+        import time
+        start_time = time.time()
+        
         schema_info = self.db_connector.get_schema()
         
         field_mappings = {}
@@ -32,10 +35,13 @@ class DataMapperAgent:
             db_field = self._map_field(business_field, schema_info)
             field_mappings[business_field] = db_field
         
+        processing_time = int((time.time() - start_time) * 1000)
+        
         return DataMapping(
             business_terms=self.business_glossary,
             table_mappings=table_mappings,
-            field_mappings=field_mappings
+            field_mappings=field_mappings,
+            processing_time_ms=processing_time
         )
     
     def _map_field(self, business_field: str, schema_info: Dict[str, Any]) -> str:
