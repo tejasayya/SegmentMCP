@@ -2,18 +2,15 @@
   "mcpServers": {
     "segmentation-agent": {
       "command": "python",
-      "args": ["main.py"],
+      "args": [
+        "main.py"
+      ],
       "cwd": "/absolute/path/to/your/SegmentMCP",
       "env": {
-        "OPENAI_API_KEY": "your-openai-api-key-here",
-        "KAGGLE_USERNAME": "your-kaggle-username",
-        "KAGGLE_KEY": "your-kaggle-key"
+        "OPENAI_API_KEY": "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",
+        "KAGGLE_USERNAME": "ronpitts",
+        "KAGGLE_KEY": "474ad94fc76eca84f74510df94e66e0c"
       }
     }
   }
 }
-
-// Instructions:
-// 1. Replace "/absolute/path/to/your/SegmentMCP" with your actual project path
-// 2. Or run: python -c "from config import Config; Config.setup_project_structure()"
-// 3. This will generate "claude_mcp_config_generated.json" with correct paths
